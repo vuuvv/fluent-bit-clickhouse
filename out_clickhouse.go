@@ -14,20 +14,22 @@ import (
 
 	"github.com/fluent/fluent-bit-go/output"
 	//"github.com/ugorji/go/codec"
-    "github.com/kshvakov/clickhouse"
+	"github.com/kshvakov/clickhouse"
 	klog "k8s.io/klog"
 )
 
 var (
 	client *sql.DB
 
-	database  string
-	table     string
-	batchSize int
+	database      string
+	table         string
+	batchSize     int
+	flushTime     int
+	lastFlushTime time.Time = time.Now()
 
 	insertSQL = "INSERT INTO %s.%s(date, cluster, namespace, app, pod_name, container_name, host, log, ts) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
-	rw sync.RWMutex
+	rw     sync.RWMutex
 	buffer = make([]Log, 0)
 )
 
@@ -36,17 +38,18 @@ const (
 	DefaultReadTimeout  string = "10"
 
 	DefaultBatchSize int = 1024
+	DefaultFlushTime int = 10
 )
 
 type Log struct {
-	Cluster       string
-	Namespace     string
-	App           string
+	Cluster   string
+	Namespace string
+	App       string
 	Pod       string
 	Container string
-	Host          string
-	Log           string
-	Ts            time.Time
+	Host      string
+	Log       string
+	Ts        time.Time
 }
 
 //export FLBPluginRegister
@@ -54,8 +57,9 @@ func FLBPluginRegister(ctx unsafe.Pointer) int {
 	return output.FLBPluginRegister(ctx, "clickhouse", "Clickhouse Output Plugin.!")
 }
 
-//export FLBPluginInit
 // ctx (context) pointer to fluentbit context (state/ c code)
+//
+//export FLBPluginInit
 func FLBPluginInit(ctx unsafe.Pointer) int {
 	// init log
 	//klog.InitFlags(nil)
@@ -104,15 +108,27 @@ func FLBPluginInit(ctx unsafe.Pointer) int {
 	}
 
 	if v := os.Getenv("CLICKHOUSE_BATCH_SIZE"); v != "" {
-		size ,err:=strconv.Atoi(v)
+		size, err := strconv.Atoi(v)
 		if err != nil {
-			klog.Infof("you set the default bacth_size: %d", DefaultBatchSize)
+			klog.Infof("you set the default batch_size: %d", DefaultBatchSize)
 			batchSize = DefaultBatchSize
 		}
 		batchSize = size
 	} else {
-		klog.Infof("you set the default bacth_size: %d", DefaultBatchSize)
+		klog.Infof("you set the default batch_size: %d", DefaultBatchSize)
 		batchSize = DefaultBatchSize
+	}
+
+	if v := os.Getenv("CLICKHOUSE_FLUSH_TIME"); v != "" {
+		size, err := strconv.Atoi(v)
+		if err != nil {
+			klog.Infof("you set the default flush_time: %d", DefaultFlushTime)
+			batchSize = DefaultBatchSize
+		}
+		flushTime = size
+	} else {
+		klog.Infof("you set the default flush_time: %d", DefaultFlushTime)
+		flushTime = DefaultBatchSize
 	}
 
 	var writeTimeout string
@@ -147,19 +163,18 @@ func FLBPluginInit(ctx unsafe.Pointer) int {
 		}
 		return output.FLB_ERROR
 	}
-    // ==
+	// ==
 	client = db
-
 
 	return output.FLB_OK
 }
 
-//export FLBPluginFlush
 // FLBPluginFlush is called from fluent-bit when data need to be sent. is called from fluent-bit when data need to be sent.
+//
+//export FLBPluginFlush
 func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 	rw.Lock()
 	defer rw.Unlock()
-
 
 	// ping
 	if err := client.Ping(); err != nil {
@@ -271,10 +286,10 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 	}
 
 	// sink data
-	if len(buffer) < batchSize {
+	deltaSeconds := int(time.Now().Sub(lastFlushTime))
+	if len(buffer) < batchSize && deltaSeconds < flushTime {
 		return output.FLB_OK
 	}
-
 
 	sql := fmt.Sprintf(insertSQL, database, table)
 
@@ -314,10 +329,10 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 	//klog.Infof("Exported %d log to clickhouse in %s", len(buffer), end.Sub(start))
 
 	buffer = make([]Log, 0)
+	lastFlushTime = time.Now()
 
 	return output.FLB_OK
 }
-
 
 //export FLBPluginExit
 func FLBPluginExit() int {
@@ -326,5 +341,3 @@ func FLBPluginExit() int {
 
 func main() {
 }
-
-
