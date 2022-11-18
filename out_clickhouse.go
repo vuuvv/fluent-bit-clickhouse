@@ -65,7 +65,7 @@ type LogJson struct {
 	Level string `json:"level"`
 	Type  string `json:"type"`
 	Msg   string `json:"_msg"`
-	Req   string `json:"req"`
+	Req   string `json:"path"`
 	Ip    string `json:"ip"`
 }
 
@@ -310,7 +310,7 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 				log.Msg = obj.Msg
 				log.Type = obj.Type
 				log.Req = obj.Req
-				log.Ip = obj.Req
+				log.Ip = obj.Ip
 
 			}
 			// 如果有错误就不处理
