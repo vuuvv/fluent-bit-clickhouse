@@ -29,7 +29,7 @@ var (
 	flushTime     int
 	lastFlushTime time.Time = time.Now()
 
-	insertSQL = "INSERT INTO %s.%s(date, cluster, namespace, app, pod_name, container_name, host, log, ts, trace, level, type, msg, req, ip) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+	insertSQL = "INSERT INTO %s.%s(date, cluster, namespace, app, pod_name, container_name, host, log, ts, trace, level, type, msg, req, ip, latency) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
 	rw     sync.RWMutex
 	buffer = make([]Log, 0)
@@ -58,15 +58,17 @@ type Log struct {
 	Msg       string
 	Req       string
 	Ip        string
+	Latency   float64 `json:"latency"`
 }
 
 type LogJson struct {
-	Trace string `json:"trace"`
-	Level string `json:"level"`
-	Type  string `json:"type"`
-	Msg   string `json:"_msg"`
-	Req   string `json:"path"`
-	Ip    string `json:"ip"`
+	Trace   string  `json:"trace"`
+	Level   string  `json:"level"`
+	Type    string  `json:"type"`
+	Msg     string  `json:"_msg"`
+	Req     string  `json:"path"`
+	Ip      string  `json:"ip"`
+	Latency float64 `json:"latency"`
 }
 
 //export FLBPluginRegister
@@ -311,6 +313,7 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 				log.Type = obj.Type
 				log.Req = obj.Req
 				log.Ip = obj.Ip
+				log.Latency = obj.Latency
 
 			}
 			// 如果有错误就不处理
@@ -345,7 +348,7 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 		// ensure tags are inserted in the same order each time
 		// possibly/probably impacts indexing?
 		_, err = smt.Exec(l.Ts, l.Cluster, l.Namespace, l.App, l.Pod, l.Container, l.Host,
-			l.Log, l.Ts, l.Trace, l.Level, l.Type, l.Msg, l.Req, l.Ip)
+			l.Log, l.Ts, l.Trace, l.Level, l.Type, l.Msg, l.Req, l.Ip, l.Latency)
 
 		if err != nil {
 			klog.Errorf("statement exec failure: %s", err.Error())
