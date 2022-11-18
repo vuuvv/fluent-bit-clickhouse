@@ -3,11 +3,13 @@ package main
 import (
 	"C"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
+	"strings"
 	"sync"
-
 	//"reflect"
 	"time"
 	"unsafe"
@@ -50,6 +52,17 @@ type Log struct {
 	Host      string
 	Log       string
 	Ts        time.Time
+	Trace     string
+	Level     string
+	Type      string
+	Msg       string
+}
+
+type LogJson struct {
+	Trace string `json:"trace"`
+	Level string `json:"level"`
+	Type  string `json:"type"`
+	Msg   string `json:"msg"`
 }
 
 //export FLBPluginRegister
@@ -271,7 +284,7 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 			case "kubernetes_host":
 				log.Host = value
 			case "log":
-				log.Log = value
+				log.Log = ClearCriOFormat(value)
 			}
 
 		}
@@ -282,6 +295,20 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 
 		//log.Ts = time.Unix(int64(timestamp), 0)
 		log.Ts = timestamp
+
+		// json parse
+		if strings.HasPrefix(log.Log, "{") && strings.HasSuffix(log.Log, "}") {
+			obj := &LogJson{}
+			err = json.Unmarshal([]byte(log.Log), obj)
+			if err == nil {
+				log.Level = obj.Level
+				log.Trace = obj.Trace
+				log.Msg = obj.Msg
+				log.Type = obj.Type
+			}
+			// 如果有错误就不处理
+		}
+
 		buffer = append(buffer, log)
 	}
 
@@ -337,6 +364,16 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 //export FLBPluginExit
 func FLBPluginExit() int {
 	return output.FLB_OK
+}
+
+func ClearCriOFormat(str string) (ret string) {
+	regex := "^([^ ]+) (stdout|stderr) ([^ ]*)"
+	r, err := regexp.Compile(regex)
+	if err != nil {
+		return str
+	}
+
+	return strings.TrimSpace(r.ReplaceAllString(str, ""))
 }
 
 func main() {
