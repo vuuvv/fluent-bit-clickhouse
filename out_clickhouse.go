@@ -64,6 +64,7 @@ type Log struct {
 }
 
 type LogJson struct {
+	Ts       string  `json:"ts"`
 	Trace    string  `json:"trace"`
 	Level    string  `json:"level"`
 	Type     string  `json:"type"`
@@ -71,7 +72,7 @@ type LogJson struct {
 	Req      string  `json:"path"`
 	Ip       string  `json:"ip"`
 	Latency  float64 `json:"latency"`
-	UserId   string  `json:"user_id"`
+	UserId   int64   `json:"user_id"`
 	Username string  `json:"username"`
 }
 
@@ -318,7 +319,7 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 				log.Req = obj.Req
 				log.Ip = obj.Ip
 				log.Latency = obj.Latency
-				log.UserId = obj.UserId
+				log.UserId = strconv.FormatInt(obj.UserId, 10)
 				log.Username = obj.Username
 			}
 			// 如果有错误就不处理
