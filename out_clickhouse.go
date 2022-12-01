@@ -29,7 +29,7 @@ var (
 	flushTime     int
 	lastFlushTime time.Time = time.Now()
 
-	insertSQL = "INSERT INTO %s.%s(date, cluster, namespace, app, pod_name, container_name, host, log, ts, trace, level, type, msg, req, ip, latency, user_id, user_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+	insertSQL = "INSERT INTO %s.%s(date, cluster, namespace, app, pod_name, container_name, host, log, ts, trace, level, type, msg, req, ip, latency, user_id, username) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
 	rw     sync.RWMutex
 	buffer = make([]Log, 0)
