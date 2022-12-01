@@ -71,7 +71,7 @@ type LogJson struct {
 	Req      string  `json:"path"`
 	Ip       string  `json:"ip"`
 	Latency  float64 `json:"latency"`
-	UserId   string  `json:"userId"`
+	UserId   string  `json:"user_id"`
 	Username string  `json:"username"`
 }
 
