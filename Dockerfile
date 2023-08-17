@@ -1,4 +1,9 @@
 FROM golang:1.18 AS build-env
+
+# 启用go module
+ENV GO111MODULE=on \
+    GOPROXY=https://goproxy.cn,direct
+
 ADD ./  /go/src/github.com/iyacontrol/fluent-bit-clickhouse
 WORKDIR /go/src/github.com/iyacontrol/fluent-bit-clickhouse
 RUN go build -buildmode=c-shared -o clickhouse.so .
