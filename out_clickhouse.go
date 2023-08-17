@@ -298,7 +298,7 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 		}
 
 		txt, _ := json.Marshal(flattenData)
-		klog.Info("flattenData", txt, len(flattenData))
+		klog.Info("flattenData", string(txt), len(flattenData))
 
 		log := Log{}
 		for k, v := range flattenData {
@@ -311,6 +311,8 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 			default:
 				value = fmt.Sprintf("%v", v)
 			}
+
+			klog.Info("value", value)
 
 			switch k {
 			case "cluster":
@@ -333,6 +335,8 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 
 		}
 
+		klog.Info("out of switch")
+
 		if log.App == "" {
 			break
 		}
@@ -342,6 +346,7 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 
 		// json parse
 		if strings.HasPrefix(log.Log, "{") && strings.HasSuffix(log.Log, "}") {
+			klog.Info("json parse")
 			obj := &LogJson{}
 			err = json.Unmarshal([]byte(log.Log), obj)
 			if err == nil {
