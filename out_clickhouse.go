@@ -63,7 +63,7 @@ type BaseLog struct {
 }
 
 type Log struct {
-	*BaseLog
+	BaseLog
 	Log   string
 	Ts    time.Time
 	Trace string
@@ -88,7 +88,7 @@ type LogJson struct {
 }
 
 type ReqLog struct {
-	*BaseLog
+	BaseLog
 	Method    string `json:"method"`
 	Path      string `json:"path"`
 	Action    string `json:"action"`
@@ -99,7 +99,7 @@ type ReqLog struct {
 }
 
 type SqlLog struct {
-	*BaseLog
+	BaseLog
 	Sql  string  `json:"sql"`
 	File string  `json:"file"`
 	Ms   float64 `json:"ms"`
@@ -298,10 +298,8 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 		}
 
 		txt, _ := json.Marshal(flattenData)
-		klog.Info("flattenData", string(txt), len(flattenData))
 
 		log := Log{}
-		log.App = "123"
 		for k, v := range flattenData {
 			value := ""
 			switch t := v.(type) {
@@ -331,13 +329,10 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 			case "kubernetes_host":
 				log.Host = value
 			case "log":
-				klog.Info("ClearCriOFormat")
 				log.Log = ClearCriOFormat(value)
 			}
 
 		}
-
-		klog.Info("out of switch")
 
 		if log.App == "" {
 			break
@@ -348,7 +343,6 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 
 		// json parse
 		if strings.HasPrefix(log.Log, "{") && strings.HasSuffix(log.Log, "}") {
-			klog.Info("json parse")
 			obj := &LogJson{}
 			err = json.Unmarshal([]byte(log.Log), obj)
 			if err == nil {
