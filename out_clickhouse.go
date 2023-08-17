@@ -312,7 +312,7 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 				value = fmt.Sprintf("%v", v)
 			}
 
-			klog.Info("value", value)
+			klog.Info("value ", k, " ", value)
 
 			switch k {
 			case "cluster":
