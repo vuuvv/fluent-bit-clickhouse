@@ -301,6 +301,7 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 		klog.Info("flattenData", string(txt), len(flattenData))
 
 		log := Log{}
+		log.App = "123"
 		for k, v := range flattenData {
 			value := ""
 			switch t := v.(type) {
@@ -330,6 +331,7 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 			case "kubernetes_host":
 				log.Host = value
 			case "log":
+				klog.Info("ClearCriOFormat")
 				log.Log = ClearCriOFormat(value)
 			}
 
