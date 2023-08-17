@@ -269,9 +269,6 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 			break
 		}
 
-		txt, _ := json.Marshal(mapData)
-		klog.Info("mapData", txt)
-
 		// Get a slice and their two entries: timestamp and map
 		//slice := reflect.ValueOf(m)
 		//timestampData := slice.Index(0).Interface()
@@ -299,6 +296,9 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 		if err != nil {
 			break
 		}
+
+		txt, _ := json.Marshal(flattenData)
+		klog.Info("flattenData", txt, len(flattenData))
 
 		log := Log{}
 		for k, v := range flattenData {
