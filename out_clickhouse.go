@@ -297,8 +297,6 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 			break
 		}
 
-		txt, _ := json.Marshal(flattenData)
-
 		log := Log{}
 		for k, v := range flattenData {
 			value := ""
