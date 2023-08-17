@@ -16,8 +16,8 @@ import (
 
 	"github.com/fluent/fluent-bit-go/output"
 	//"github.com/ugorji/go/codec"
-	"github.com/kshvakov/clickhouse"
-	klog "k8s.io/klog"
+	"github.com/ClickHouse/clickhouse-go"
+	"k8s.io/klog"
 )
 
 var (
