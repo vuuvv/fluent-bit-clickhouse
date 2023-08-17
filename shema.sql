@@ -52,4 +52,90 @@ CREATE TABLE park.logs
                   container_name,
                   host,
                   ts)
-        SETTINGS index_granularity = 8192
+        SETTINGS index_granularity = 8192;
+
+CREATE TABLE park.sql_log
+(
+    `date`           Date DEFAULT toDate(0),
+    `cluster`        String,
+    `namespace`      String,
+    `app`            String,
+    `container_name` String,
+    `sql`            String,
+    `file`           String,
+    `ms`             Float64,
+    `rows`           Int64,
+    `trace`          String,
+    "user_id"        String,
+    "username"       String,
+    `ip`             String,
+    `host`           String,
+    `pod_name`       String,
+    `ts`             DateTime,
+    INDEX idx_user_id user_id TYPE ngrambf_v1(3,
+                                   256,
+                                   2,
+                                   0) GRANULARITY 4,
+    INDEX idx_username username TYPE ngrambf_v1(3,
+                                     256,
+                                     2,
+                                     0) GRANULARITY 4,
+    INDEX idx_ms ms TYPE minmax GRANULARITY 4,
+    INDEX idx_trace trace TYPE ngrambf_v1(3,
+                               256,
+                               2,
+                               0) GRANULARITY 4
+)
+    ENGINE = MergeTree
+        PARTITION BY toYYYYMMDD(date)
+        ORDER BY (ts)
+        SETTINGS index_granularity = 8192;
+
+CREATE TABLE park.req_log
+(
+    `date`           Date DEFAULT toDate(0),
+    `namespace`      String,
+    `app`            String,
+    `container_name` String,
+    `method`         String,
+    `path`           String,
+    `action`         String,
+    `query`          String,
+    `user_agent`     String,
+    `status`         String,
+    `form`           String,
+    "user_id"        String,
+    "username"       String,
+    `ip`             String,
+    `latency`        Float64,
+    `host`           String,
+    `cluster`        String,
+    `pod_name`       String,
+    `trace`          String,
+    `ts`             DateTime,
+    INDEX idx_user_id user_id TYPE ngrambf_v1(3,
+                                   256,
+                                   2,
+                                   0) GRANULARITY 4,
+    INDEX idx_username username TYPE ngrambf_v1(3,
+                                     256,
+                                     2,
+                                     0) GRANULARITY 4,
+    INDEX idx_path path TYPE ngrambf_v1(3,
+                             256,
+                             2,
+                             0) GRANULARITY 4,
+    INDEX idx_action action TYPE ngrambf_v1(3,
+                                     256,
+                                     2,
+                                     0) GRANULARITY 4,
+    INDEX idx_ms latency TYPE minmax GRANULARITY 4,
+    INDEX idx_trace trace TYPE ngrambf_v1(3,
+                               256,
+                               2,
+                               0) GRANULARITY 4
+)
+    ENGINE = MergeTree
+        PARTITION BY toYYYYMMDD(date)
+        ORDER BY (ts)
+        SETTINGS index_granularity = 8192;
