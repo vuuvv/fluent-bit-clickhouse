@@ -25,13 +25,10 @@ type BaseLog struct {
 type Log struct {
 	BaseLog
 	Log   string
-	Ts    time.Time
-	Trace string
 	Level string
 	Type  string
 	Msg   string
 	Req   string
-	Ip    string
 }
 
 type LogJson struct {
