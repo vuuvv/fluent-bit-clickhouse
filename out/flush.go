@@ -136,13 +136,14 @@ func (this *ClickHouseClient) Flush(dec *output.FLBDecoder) int {
 					err = json.Unmarshal([]byte(log.Log), &reqLog)
 					if err == nil {
 						reqLog.BaseLog = log.BaseLog
+						this.reqBuffer = append(this.reqBuffer, reqLog)
 					}
-					this.reqBuffer = append(this.reqBuffer, reqLog)
-					klog.Info("req log ", log.Ts, timestamp, " ", log.Log, " ", len(this.reqBuffer), err)
+					klog.Info("req log ", reqLog.Ts, log.Ts, timestamp, " ", reqLog.Action, " ", len(this.reqBuffer), err)
 				case "sql":
 					sqlLog := SqlLog{}
 					sqlLog.BaseLog = log.BaseLog
 					ParseSqlLog(log.Log, &sqlLog)
+					klog.Info("req log ", sqlLog.Ts, log.Ts, timestamp, " ", sqlLog.Sql, " ", len(this.sqlBuffer), err)
 					this.sqlBuffer = append(this.sqlBuffer, sqlLog)
 				}
 			}
@@ -280,7 +281,7 @@ func (this *ClickHouseClient) FlushReq() (ret bool) {
 		// possibly/probably impacts indexing?
 		_, err = smt.Exec(
 			l.Ts, l.Cluster, l.Namespace, l.App, l.Pod, l.Container, l.Host,
-			l.Ts, l.Trace, l.Method, l.Path, l.Action, l.Query, l.UserAgent, l.Status, l.Form,
+			l.Ts, l.Trace, l.Method, l.Path, l.Action, l.Query, l.UserAgent, string(l.Status), l.Form,
 			l.Ip, l.Latency, l.UserId, l.Username,
 		)
 

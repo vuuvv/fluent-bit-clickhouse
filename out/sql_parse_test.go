@@ -1,6 +1,8 @@
 package out
 
 import (
+	"encoding/json"
+	"fmt"
 	"testing"
 )
 
@@ -15,4 +17,21 @@ func TestParseSqlInfo(t *testing.T) {
 	t.Log(log.File)
 	t.Log(log.Ms)
 	t.Log(log.Rows)
+}
+
+type MyStruct struct {
+	MyInt json.RawMessage `json:"myInt"`
+}
+
+func TestJsonParse(t *testing.T) {
+	jsonStr := `{"level":"info","ts":"2023-08-18T16:31:21.886+0800","caller":"server/server.go:245","_msg":"request","machine":"knode1","type":"req","status":200,"method":"GET","path":"/api/user/wx/login/qr/status","action":"系统管理::用户管理-获取登录二维码状态","forward":"/user/wx/login/qr/status","ip":"192.168.1.50","query":"token=54843238297661440&t=1692347478939","start":"2023-08-18T16:31:21.886+0800","latency":0.000892531,"trace":"54843336961294336"}`
+
+	var reqLog ReqLog
+	err := json.Unmarshal([]byte(jsonStr), &reqLog)
+	if err != nil {
+		fmt.Println("解析JSON出错:", err)
+		return
+	}
+
+	fmt.Println("解析后的字符串:", reqLog.Status)
 }

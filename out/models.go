@@ -2,6 +2,7 @@ package out
 
 import (
 	"database/sql"
+	"encoding/json"
 	"sync"
 	"time"
 )
@@ -48,13 +49,13 @@ type LogJson struct {
 
 type ReqLog struct {
 	BaseLog
-	Method    string `json:"method"`
-	Path      string `json:"path"`
-	Action    string `json:"action"`
-	Query     string `json:"query"`
-	UserAgent string `json:"user_agent"`
-	Status    string `json:"status"`
-	Form      string `json:"form"`
+	Method    string          `json:"method"`
+	Path      string          `json:"path"`
+	Action    string          `json:"action"`
+	Query     string          `json:"query"`
+	UserAgent string          `json:"user_agent"`
+	Status    json.RawMessage `json:"status"`
+	Form      string          `json:"form"`
 }
 
 type SqlLog struct {
