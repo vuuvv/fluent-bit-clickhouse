@@ -114,6 +114,12 @@ func (this *ClickHouseClient) Flush(dec *output.FLBDecoder) int {
 			obj := &LogJson{}
 			err = json.Unmarshal([]byte(log.Log), obj)
 			if err == nil {
+				if obj.Ts != "" {
+					ts, err := time.Parse("2006-01-02T15:04:05.000-0700", obj.Ts)
+					if err == nil {
+						log.Ts = ts
+					}
+				}
 				log.Level = obj.Level
 				log.Trace = obj.Trace
 				log.Msg = obj.Msg
@@ -132,7 +138,7 @@ func (this *ClickHouseClient) Flush(dec *output.FLBDecoder) int {
 						reqLog.BaseLog = log.BaseLog
 					}
 					this.reqBuffer = append(this.reqBuffer, reqLog)
-					klog.Info("req log ", timestamp, " ", log.Log, " ", len(this.reqBuffer), err)
+					klog.Info("req log ", log.Ts, timestamp, " ", log.Log, " ", len(this.reqBuffer), err)
 				case "sql":
 					sqlLog := SqlLog{}
 					sqlLog.BaseLog = log.BaseLog

@@ -13,12 +13,12 @@ type BaseLog struct {
 	Pod       string
 	Container string
 	Trace     string
-	Ip        string `json:"ip"`
-	Host      string
-	Latency   float64 `json:"latency"`
-	UserId    string  `json:"userId"`
-	Username  string  `json:"username"`
-	Ts        time.Time
+	Ip        string    `json:"ip"`
+	Host      string    `json:"host"`
+	Latency   float64   `json:"latency"`
+	UserId    string    `json:"userId"`
+	Username  string    `json:"username"`
+	Ts        time.Time `json:"-"`
 }
 
 type Log struct {
