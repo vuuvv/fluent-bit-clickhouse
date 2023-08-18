@@ -151,30 +151,7 @@ func (this *ClickHouseClient) Flush(dec *output.FLBDecoder) int {
 		return output.FLB_OK
 	}
 
-	//start := time.Now()
-	// post them to db all at once
-	tx, err := client.Begin()
-	if err != nil {
-		klog.Errorf("begin transaction failure: %s", err.Error())
-		return output.FLB_ERROR
-	}
-
-	// build statements
-	if !this.FlushAll(tx) {
-		return output.FLB_ERROR
-	}
-
-	if !this.FlushReq(tx) {
-		return output.FLB_ERROR
-	}
-
-	if !this.FlushSql(tx) {
-		return output.FLB_ERROR
-	}
-
-	// commit and record metrics
-	if err = tx.Commit(); err != nil {
-		klog.Errorf("commit failed failure: %s", err.Error())
+	if !this.doFlush() {
 		return output.FLB_ERROR
 	}
 
@@ -214,6 +191,25 @@ func ParseSqlLog(str string, log *SqlLog) {
 		log.Ms, _ = strconv.ParseFloat(matches[3], 64)
 		log.Rows, _ = strconv.ParseInt(matches[4], 10, 64)
 	}
+}
+
+func (this *ClickHouseClient) doFlush() (ret bool) {
+	tx, err := this.client.Begin()
+	if err != nil {
+		klog.Errorf("begin transaction failure: %s", err.Error())
+		return false
+	}
+
+	defer func() {
+		// commit and record metrics
+		if err = tx.Commit(); err != nil {
+			klog.Errorf("commit failed failure: %s", err.Error())
+			ret = false
+		}
+	}()
+
+	// build statements
+	return this.FlushAll(tx) && this.FlushReq(tx) && this.FlushSql(tx)
 }
 
 func (this *ClickHouseClient) FlushAll(tx *sql.Tx) bool {
