@@ -2,7 +2,6 @@ package out
 
 import "C"
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"github.com/ClickHouse/clickhouse-go"
@@ -288,7 +287,7 @@ func (this *ClickHouseClient) FlushReq() (ret bool) {
 	return true
 }
 
-func (this *ClickHouseClient) FlushSql(tx *sql.Tx) (ret bool) {
+func (this *ClickHouseClient) FlushSql() (ret bool) {
 	if len(this.sqlBuffer) == 0 {
 		return true
 	}
