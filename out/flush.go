@@ -142,7 +142,7 @@ func (this *ClickHouseClient) Flush(dec *output.FLBDecoder) int {
 				case "sql":
 					sqlLog := SqlLog{}
 					sqlLog.BaseLog = log.BaseLog
-					ParseSqlLog(log.Log, &sqlLog)
+					ParseSqlLog(log.Msg, &sqlLog)
 					//klog.Info("sql log ", sqlLog.Ts, log.Ts, timestamp, " ", sqlLog.Sql, " ", len(this.sqlBuffer), err)
 					this.sqlBuffer = append(this.sqlBuffer, sqlLog)
 				}
