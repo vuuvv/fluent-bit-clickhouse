@@ -12,13 +12,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"unsafe"
 )
 
-func (this *ClickHouseClient) Flush(data unsafe.Pointer, length C.int, _ *C.char) int {
-	this.rw.Lock()
-	defer this.rw.Unlock()
-
+func (this *ClickHouseClient) Flush(dec *output.FLBDecoder) int {
 	client := Client.client
 
 	// ping
@@ -34,9 +30,6 @@ func (this *ClickHouseClient) Flush(data unsafe.Pointer, length C.int, _ *C.char
 	var ret int
 	var timestampData interface{}
 	var mapData map[interface{}]interface{}
-
-	// Create Fluent Bit decoder
-	dec := output.NewDecoder(data, int(length))
 
 	for {
 		//// decode the msgpack data

@@ -3,11 +3,14 @@ package main
 import (
 	"C"
 	"github.com/iyacontrol/fluent-bit-clickhouse/out"
+	"sync"
 
 	"unsafe"
 
 	"github.com/fluent/fluent-bit-go/output"
 )
+
+var rw sync.Mutex
 
 //export FLBPluginRegister
 func FLBPluginRegister(ctx unsafe.Pointer) int {
@@ -24,8 +27,12 @@ func FLBPluginInit(_ unsafe.Pointer) int {
 // FLBPluginFlush is called from fluent-bit when data need to be sent. is called from fluent-bit when data need to be sent.
 //
 //export FLBPluginFlush
-func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
-	return out.Client.Flush(data, length, tag)
+func FLBPluginFlush(data unsafe.Pointer, length C.int, _ *C.char) int {
+	rw.Lock()
+	defer rw.Unlock()
+	// Create Fluent Bit decoder
+	dec := output.NewDecoder(data, int(length))
+	return out.Client.Flush(dec)
 }
 
 //export FLBPluginExit
