@@ -196,6 +196,18 @@ func ParseSqlLog(str string, log *SqlLog) {
 }
 
 func (this *ClickHouseClient) doFlush() (ret bool) {
+
+	// build statements
+	return this.FlushAll() && this.FlushReq() && this.FlushSql()
+}
+
+func (this *ClickHouseClient) FlushAll() (ret bool) {
+	if len(this.buffer) == 0 {
+		return true
+	}
+
+	s := this.GetSql()
+
 	tx, err := this.client.Begin()
 	if err != nil {
 		klog.Errorf("begin transaction failure: %s", err.Error())
@@ -210,16 +222,6 @@ func (this *ClickHouseClient) doFlush() (ret bool) {
 		}
 	}()
 
-	// build statements
-	return this.FlushAll(tx) && this.FlushReq(tx) && this.FlushSql(tx)
-}
-
-func (this *ClickHouseClient) FlushAll(tx *sql.Tx) bool {
-	if len(this.buffer) == 0 {
-		return true
-	}
-
-	s := this.GetSql()
 	// build statements
 	smt, err := tx.Prepare(s)
 	if err != nil {
@@ -243,12 +245,26 @@ func (this *ClickHouseClient) FlushAll(tx *sql.Tx) bool {
 	return true
 }
 
-func (this *ClickHouseClient) FlushReq(tx *sql.Tx) bool {
+func (this *ClickHouseClient) FlushReq() (ret bool) {
 	if len(this.reqBuffer) == 0 {
 		return true
 	}
 
 	s := this.GetReqSql()
+
+	tx, err := this.client.Begin()
+	if err != nil {
+		klog.Errorf("begin transaction failure: %s", err.Error())
+		return false
+	}
+
+	defer func() {
+		// commit and record metrics
+		if err = tx.Commit(); err != nil {
+			klog.Errorf("commit failed failure: %s", err.Error())
+			ret = false
+		}
+	}()
 
 	smt, err := tx.Prepare(s)
 	if err != nil {
@@ -272,11 +288,25 @@ func (this *ClickHouseClient) FlushReq(tx *sql.Tx) bool {
 	return true
 }
 
-func (this *ClickHouseClient) FlushSql(tx *sql.Tx) bool {
+func (this *ClickHouseClient) FlushSql(tx *sql.Tx) (ret bool) {
 	if len(this.sqlBuffer) == 0 {
 		return true
 	}
 	s := this.GetSqlSql()
+
+	tx, err := this.client.Begin()
+	if err != nil {
+		klog.Errorf("begin transaction failure: %s", err.Error())
+		return false
+	}
+
+	defer func() {
+		// commit and record metrics
+		if err = tx.Commit(); err != nil {
+			klog.Errorf("commit failed failure: %s", err.Error())
+			ret = false
+		}
+	}()
 
 	smt, err := tx.Prepare(s)
 	if err != nil {
