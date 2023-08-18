@@ -133,11 +133,13 @@ func (this *ClickHouseClient) Flush(dec *output.FLBDecoder) int {
 						reqLog.BaseLog = log.BaseLog
 					}
 					this.reqBuffer = append(this.reqBuffer, reqLog)
+					klog.Info("req log ", log.Log, " ", len(this.reqBuffer))
 				case "sql":
 					sqlLog := SqlLog{}
 					sqlLog.BaseLog = log.BaseLog
 					ParseSqlLog(log.Log, &sqlLog)
 					this.sqlBuffer = append(this.sqlBuffer, sqlLog)
+					klog.Info("sql log ", log.Log, " ", len(this.sqlBuffer))
 				}
 			}
 			// 如果有错误就不处理
