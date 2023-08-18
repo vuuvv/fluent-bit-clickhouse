@@ -329,7 +329,6 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 			case "log":
 				log.Log = ClearCriOFormat(value)
 			}
-
 		}
 
 		if log.App == "" {
@@ -361,10 +360,11 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 					if err == nil {
 						reqLog.BaseLog = log.BaseLog
 					}
+					reqBuffer = append(reqBuffer, reqLog)
 				case "sql":
 					sqlLog := SqlLog{}
 					sqlLog.BaseLog = log.BaseLog
-
+					sqlBuffer = append(sqlBuffer, sqlLog)
 				}
 			}
 			// 如果有错误就不处理
