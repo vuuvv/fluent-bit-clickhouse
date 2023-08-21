@@ -24,7 +24,8 @@ type MyStruct struct {
 }
 
 func TestJsonParse(t *testing.T) {
-	jsonStr := `{"level":"info","ts":"2023-08-18T16:31:21.886+0800","caller":"server/server.go:245","_msg":"request","machine":"knode1","type":"req","status":200,"method":"GET","path":"/api/user/wx/login/qr/status","action":"系统管理::用户管理-获取登录二维码状态","forward":"/user/wx/login/qr/status","ip":"192.168.1.50","query":"token=54843238297661440&t=1692347478939","start":"2023-08-18T16:31:21.886+0800","latency":0.000892531,"trace":"54843336961294336"}`
+	//jsonStr := `{"level":"info","ts":"2023-08-18T16:31:21.886+0800","caller":"server/server.go:245","_msg":"request","machine":"knode1","type":"req","status":200,"method":"GET","path":"/api/user/wx/login/qr/status","action":"系统管理::用户管理-获取登录二维码状态","forward":"/user/wx/login/qr/status","ip":"192.168.1.50","query":"token=54843238297661440&t=1692347478939","start":"2023-08-18T16:31:21.886+0800","latency":0.000892531,"trace":"54843336961294336"}`
+	jsonStr := `{"level":"info","ts":"2023-08-21T10:00:11.871+0800","caller":"server/middlewares.go:203","_msg":"request","machine":"meter-app-579dcdf7df-ldm49","status":200,"method":"POST","type":"req","path":"/meter/device/current","action":"水电表管理::设备-当前值使用量","query":"","ip":"10.244.1.36","user-agent":"go-resty/2.7.0 (https://github.com/go-resty/resty)","latency":0.004982347,"form":{"mac":"","sn":"420000000022"}}`
 
 	var reqLog ReqLog
 	err := json.Unmarshal([]byte(jsonStr), &reqLog)

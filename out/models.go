@@ -52,7 +52,7 @@ type ReqLog struct {
 	Query     string          `json:"query"`
 	UserAgent string          `json:"user_agent"`
 	Status    json.RawMessage `json:"status"`
-	Form      string          `json:"form"`
+	Form      json.RawMessage `json:"form"`
 }
 
 type SqlLog struct {

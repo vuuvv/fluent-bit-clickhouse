@@ -281,7 +281,7 @@ func (this *ClickHouseClient) FlushReq() (ret bool) {
 		// possibly/probably impacts indexing?
 		_, err = smt.Exec(
 			l.Ts, l.Cluster, l.Namespace, l.App, l.Pod, l.Container, l.Host,
-			l.Ts, l.Trace, l.Method, l.Path, l.Action, l.Query, l.UserAgent, string(l.Status), l.Form,
+			l.Ts, l.Trace, l.Method, l.Path, l.Action, l.Query, l.UserAgent, string(l.Status), string(l.Form),
 			l.Ip, l.Latency, l.UserId, l.Username,
 		)
 
